@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "allowJs": false,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "target": "ES2019",
+    "strictFunctionTypes": false,
+    "noImplicitAny": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "baseUrl": "src",
+    "outDir": "build",
+    "noImplicitThis": false,
+    "sourceMap": true
+  },
+  "include": ["src"],
+  "exclude": [".templates"]
+}
