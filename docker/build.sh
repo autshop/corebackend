@@ -11,8 +11,8 @@ while getopts ":u:p:" opt; do
   esac
 done
 
-docker build -t akosfi/corebackend -f ./docker/Dockerfile .
+docker build -t akosfi/core-api -f ./docker/Dockerfile .
 
 echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
 
-docker push akosfi/corebackend:latest
+docker push akosfi/core-api:latest
