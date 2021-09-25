@@ -34,15 +34,10 @@ const authPostLoginBody: ObjectSchema = {
     }
 };
 
-export const orderCreateBody: ObjectSchema = {
-    customerEmail: {
-        key: "customerEmail",
-        validators: [
-            createRequiredPreset("customerEmail"),
-            createIsEmailPreset("customerEmail"),
-            createMinLengthPreset("customerEmail", 5),
-            createMaxLengthPreset("customerEmail", 50)
-        ]
+const shopPostBody: ObjectSchema = {
+    name: {
+        key: "name",
+        validators: [createRequiredPreset("name")]
     }
 };
 
@@ -140,7 +135,7 @@ export const orderDeleteItemsBody: ObjectSchema = {
 const validatorSchemas = {
     params: { idParams },
     body: {
-        orderCreateBody,
+        shopPostBody,
         authPostRegisterBody,
         authPostLoginBody,
         orderPutAddressBody,

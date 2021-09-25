@@ -1,4 +1,7 @@
 import User, { UserCreationAttributes } from "db/models/user";
+import { Request } from "express";
+import getJWTTokenFromRequest from "../../../utils/helpers/getJWTTokenFromRequest";
+import JWTService from "../../jwt";
 
 const getUserById = async (userId: number) => {
     return await User.findOne({
@@ -16,10 +19,19 @@ const createUser = async (userCreationAttributes: UserCreationAttributes) => {
     return await User.create(userCreationAttributes);
 };
 
-const authService = {
-    getUserById,
-    createUser,
-    getUserByEmail
+//TODO find better solution (middleware maybe)
+const getUserFromExpressRequest = async (request: Request) => {
+    const currentTokenString = getJWTTokenFromRequest(request);
+    const currentToken = (await JWTService.verifyToken(currentTokenString)) as { email: string };
+
+    return await AuthService.getUserByEmail(currentToken?.email || "");
 };
 
-export default authService;
+const AuthService = {
+    getUserById,
+    createUser,
+    getUserByEmail,
+    getUserFromExpressRequest
+};
+
+export default AuthService;

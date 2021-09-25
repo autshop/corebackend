@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import { createRequestBodyValidator } from "utils/api/middlewares/createRequestBodyValidator";
 import createAsyncController from "utils/api/middlewares/createAsyncController";
 import { UserCreationAttributes } from "db/models/user";
-import authService from "services/db/auth";
+import AuthService from "services/db/auth";
 import {
     BadRequestResponse,
     CreatedResponse,
@@ -36,7 +36,7 @@ router.post(
             passwordHash
         };
 
-        const user = await authService.createUser(userCreationAttributes);
+        const user = await AuthService.createUser(userCreationAttributes);
 
         const token = await JWTService.generateToken<UserGetDTO>({ email: user.email });
         return new CreatedResponse<{ token: string }>("User created successfully.", { token: String(token) }).send(res);
@@ -51,7 +51,7 @@ router.post(
 
         const { email, password }: AuthPostLoginDTO = req.body;
 
-        const user = await authService.getUserByEmail(email);
+        const user = await AuthService.getUserByEmail(email);
         if (!user) {
             return new UnauthorizedResponse<string>(simpleErrorMessage, simpleErrorMessage).send(res);
         }
@@ -70,10 +70,7 @@ router.get(
     "/me",
     verifyJWTMiddleware,
     createAsyncController(async (req, res) => {
-        const currentTokenString = getJWTTokenFromRequest(req);
-        const currentToken = (await JWTService.verifyToken(currentTokenString)) as { email: string };
-
-        const user = await authService.getUserByEmail(currentToken?.email || "");
+        const user = await AuthService.getUserFromExpressRequest(req);
         if (!user) {
             return new UnauthorizedResponse<string>("User not found.", "User not found.").send(res);
         }
@@ -89,7 +86,7 @@ router.get(
         const currentTokenString = getJWTTokenFromRequest(req);
         const currentToken = (await JWTService.verifyToken(currentTokenString)) as { email: string };
 
-        const user = await authService.getUserByEmail(currentToken?.email || "");
+        const user = await AuthService.getUserByEmail(currentToken?.email || "");
         if (!user) {
             return new UnauthorizedResponse<string>("User not found.", "User not found.").send(res);
         }
