@@ -1,8 +1,14 @@
 import User, { UserCreationAttributes } from "db/models/user";
 
-const getUser = async (userId: number) => {
+const getUserById = async (userId: number) => {
     return await User.findOne({
         where: { id: userId }
+    });
+};
+
+const getUserByEmail = async (email: string) => {
+    return await User.findOne({
+        where: { email }
     });
 };
 
@@ -11,8 +17,9 @@ const createUser = async (userCreationAttributes: UserCreationAttributes) => {
 };
 
 const authService = {
-    getUser,
-    createUser
+    getUserById,
+    createUser,
+    getUserByEmail
 };
 
 export default authService;

@@ -27,7 +27,8 @@ export const initialize = (sequelize: Sequelize) => {
             },
             email: {
                 type: new DataTypes.STRING(128),
-                allowNull: true
+                allowNull: true,
+                primaryKey: true
             },
             passwordHash: {
                 type: new DataTypes.STRING(256),

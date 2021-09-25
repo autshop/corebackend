@@ -4,7 +4,7 @@ const secret = String(process.env.JWT_SECRET);
 
 const signPromise = <T extends Object>(data: T) =>
     new Promise((resolve, reject) => {
-        jwt.sign(data, secret, { algorithm: "HS256" }, (err, token) => {
+        jwt.sign(data, secret, (err, token) => {
             if (err) {
                 return reject(err);
             }

@@ -4,7 +4,8 @@ enum HTTPStatusCodes {
     OK = 200,
     CREATED = 201,
     NOT_FOUND = 404,
-    BAD_REQUEST = 400
+    BAD_REQUEST = 400,
+    UNAUTHORIZED = 401
 }
 
 abstract class AbstractResponse {
@@ -57,5 +58,15 @@ export class NotFoundResponse<T> extends AbstractResponse {
 
     send(res: Response): Response {
         return super.prepareResponse<NotFoundResponse<T>>(res, this);
+    }
+}
+
+export class UnauthorizedResponse<T> extends AbstractResponse {
+    constructor(message: string, private error: T) {
+        super(HTTPStatusCodes.UNAUTHORIZED, message);
+    }
+
+    send(res: Response): Response {
+        return super.prepareResponse<UnauthorizedResponse<T>>(res, this);
     }
 }

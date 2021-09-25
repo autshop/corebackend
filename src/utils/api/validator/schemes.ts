@@ -23,6 +23,17 @@ const authPostRegisterBody: ObjectSchema = {
     }
 };
 
+const authPostLoginBody: ObjectSchema = {
+    email: {
+        key: "email",
+        validators: [createRequiredPreset("email"), createIsEmailPreset("email")]
+    },
+    password: {
+        key: "password",
+        validators: [createRequiredPreset("password")]
+    }
+};
+
 export const orderCreateBody: ObjectSchema = {
     customerEmail: {
         key: "customerEmail",
@@ -131,6 +142,7 @@ const validatorSchemas = {
     body: {
         orderCreateBody,
         authPostRegisterBody,
+        authPostLoginBody,
         orderPutAddressBody,
         orderPutItemsBody,
         orderDeleteItemsBody,
