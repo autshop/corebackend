@@ -9,6 +9,10 @@ export type AuthPostLoginDTO = {
     password: string;
 };
 
+export type AuthTokenResponse = {
+    token: string;
+};
+
 export type UserGetDTO = {
     email: string;
 };

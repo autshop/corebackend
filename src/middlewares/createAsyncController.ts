@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { BadRequestResponse } from "../response";
+import { BadRequestResponse } from "../utils/api/response";
 
 const createAsyncController = (bodyFn: (req: Request, res: Response, next: NextFunction) => void) => async (
     req: Request,

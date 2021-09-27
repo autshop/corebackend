@@ -6,7 +6,8 @@ enum ResponseMessages {
     PASSWORDS_DO_NOT_MATCH = "Passwords do not match!",
     USER_CREATED_SUCCESSFULLY = "User created successfully.",
     EMAIL_AND_OR_PASSWORD_NOT_CORRECT = "Email and/or password not correct.",
-    USER_LOGGED_IN_SUCCESSFULLY = "User logged in successfully."
+    USER_LOGGED_IN_SUCCESSFULLY = "User logged in successfully.",
+    UNAUTHORIZED = "Unauthorized."
 }
 
 export default ResponseMessages;

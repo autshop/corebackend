@@ -1,13 +1,13 @@
 import { Router } from "express";
 import bcrypt from "bcrypt";
 //
-import { createRequestBodyValidator } from "utils/api/middlewares/createRequestBodyValidator";
-import createAsyncController from "utils/api/middlewares/createAsyncController";
+import { createRequestBodyValidator } from "middlewares/createRequestBodyValidator";
+import createAsyncController from "middlewares/createAsyncController";
 import { UserCreationAttributes } from "db/models/user";
 import AuthService from "services/db/auth";
 import { BadRequestResponse, CreatedResponse, OKResponse, UnauthorizedResponse } from "utils/api/response";
 import validatorSchemas from "utils/api/validator/schemes";
-import { AuthPostLoginDTO, AuthPostRegisterDTO, UserGetDTO } from "dto/auth";
+import { AuthPostLoginDTO, AuthPostRegisterDTO, AuthTokenResponse, UserGetDTO } from "dto/auth";
 import JWTService from "services/jwt";
 import verifyJWTMiddleware from "middlewares/verifyJWTMiddleware";
 import getUserFromRequest from "utils/helpers/getUserFromRequest";
@@ -37,7 +37,7 @@ router.post(
         const user = await AuthService.createUser(userCreationAttributes);
 
         const token = await JWTService.generateToken<UserGetDTO>({ email: user.email });
-        return new CreatedResponse<{ token: string }>(ResponseMessages.USER_CREATED_SUCCESSFULLY, {
+        return new CreatedResponse<AuthTokenResponse>(ResponseMessages.USER_CREATED_SUCCESSFULLY, {
             token: String(token)
         }).send(response);
     })
@@ -66,7 +66,7 @@ router.post(
         }
 
         const token = await JWTService.generateToken<UserGetDTO>({ email: user.email });
-        return new OKResponse<{ token: string }>(ResponseMessages.USER_LOGGED_IN_SUCCESSFULLY, {
+        return new OKResponse<AuthTokenResponse>(ResponseMessages.USER_LOGGED_IN_SUCCESSFULLY, {
             token: String(token)
         }).send(response);
     })
@@ -101,7 +101,7 @@ router.get(
         }
 
         const token = await JWTService.generateToken<UserGetDTO>({ email: user.email });
-        return new OKResponse<{ token: string }>(ResponseMessages.OK, { token: String(token) }).send(response);
+        return new OKResponse<AuthTokenResponse>(ResponseMessages.OK, { token: String(token) }).send(response);
     })
 );
 
