@@ -5,29 +5,27 @@ import { createRequestBodyValidator } from "utils/api/middlewares/createRequestB
 import createAsyncController from "utils/api/middlewares/createAsyncController";
 import { UserCreationAttributes } from "db/models/user";
 import AuthService from "services/db/auth";
-import {
-    BadRequestResponse,
-    CreatedResponse,
-    NotFoundResponse,
-    OKResponse,
-    UnauthorizedResponse
-} from "utils/api/response";
+import { BadRequestResponse, CreatedResponse, OKResponse, UnauthorizedResponse } from "utils/api/response";
 import validatorSchemas from "utils/api/validator/schemes";
 import { AuthPostLoginDTO, AuthPostRegisterDTO, UserGetDTO } from "dto/auth";
 import JWTService from "services/jwt";
 import verifyJWTMiddleware from "middlewares/verifyJWTMiddleware";
-import getJWTTokenFromRequest from "../../utils/helpers/getJWTTokenFromRequest";
+import getUserFromRequest from "utils/helpers/getUserFromRequest";
+import ResponseMessages from "utils/helpers/responseMessages";
 
 const router = Router();
 
 router.post(
     "/register",
     createRequestBodyValidator(validatorSchemas.body.authPostRegisterBody),
-    createAsyncController(async (req, res) => {
-        const { email, password, passwordAgain }: AuthPostRegisterDTO = req.body;
+    createAsyncController(async (request, response) => {
+        const { email, password, passwordAgain }: AuthPostRegisterDTO = request.body;
 
         if (password !== passwordAgain) {
-            return new BadRequestResponse<string>("Passwords do not match!", "Passwords do not match!").send(res);
+            return new BadRequestResponse<string>(
+                ResponseMessages.PASSWORDS_DO_NOT_MATCH,
+                ResponseMessages.PASSWORDS_DO_NOT_MATCH
+            ).send(response);
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
@@ -39,60 +37,71 @@ router.post(
         const user = await AuthService.createUser(userCreationAttributes);
 
         const token = await JWTService.generateToken<UserGetDTO>({ email: user.email });
-        return new CreatedResponse<{ token: string }>("User created successfully.", { token: String(token) }).send(res);
+        return new CreatedResponse<{ token: string }>(ResponseMessages.USER_CREATED_SUCCESSFULLY, {
+            token: String(token)
+        }).send(response);
     })
 );
 
 router.post(
     "/login",
     createRequestBodyValidator(validatorSchemas.body.authPostLoginBody),
-    createAsyncController(async (req, res) => {
-        const simpleErrorMessage = "Email and/or password not correct.";
-
-        const { email, password }: AuthPostLoginDTO = req.body;
+    createAsyncController(async (request, response) => {
+        const { email, password }: AuthPostLoginDTO = request.body;
 
         const user = await AuthService.getUserByEmail(email);
         if (!user) {
-            return new UnauthorizedResponse<string>(simpleErrorMessage, simpleErrorMessage).send(res);
+            return new UnauthorizedResponse<string>(
+                ResponseMessages.EMAIL_AND_OR_PASSWORD_NOT_CORRECT,
+                ResponseMessages.EMAIL_AND_OR_PASSWORD_NOT_CORRECT
+            ).send(response);
         }
 
         const match = await bcrypt.compare(password, user.passwordHash);
         if (!match) {
-            return new UnauthorizedResponse<string>(simpleErrorMessage, simpleErrorMessage).send(res);
+            return new UnauthorizedResponse<string>(
+                ResponseMessages.EMAIL_AND_OR_PASSWORD_NOT_CORRECT,
+                ResponseMessages.EMAIL_AND_OR_PASSWORD_NOT_CORRECT
+            ).send(response);
         }
 
         const token = await JWTService.generateToken<UserGetDTO>({ email: user.email });
-        return new OKResponse<{ token: string }>("User logged in successfully.", { token: String(token) }).send(res);
+        return new OKResponse<{ token: string }>(ResponseMessages.USER_LOGGED_IN_SUCCESSFULLY, {
+            token: String(token)
+        }).send(response);
     })
 );
 
 router.get(
     "/me",
     verifyJWTMiddleware,
-    createAsyncController(async (req, res) => {
-        const user = await AuthService.getUserFromExpressRequest(req);
+    createAsyncController(async (request, response) => {
+        const user = await getUserFromRequest(request);
         if (!user) {
-            return new UnauthorizedResponse<string>("User not found.", "User not found.").send(res);
+            return new UnauthorizedResponse<string>(
+                ResponseMessages.USER_NOT_FOUND,
+                ResponseMessages.USER_NOT_FOUND
+            ).send(response);
         }
 
-        return new OKResponse<UserGetDTO>("OK.", { email: user.email }).send(res);
+        return new OKResponse<UserGetDTO>(ResponseMessages.OK, { email: user.email }).send(response);
     })
 );
 
 router.get(
     "/refresh",
     verifyJWTMiddleware,
-    createAsyncController(async (req, res) => {
-        const currentTokenString = getJWTTokenFromRequest(req);
-        const currentToken = (await JWTService.verifyToken(currentTokenString)) as { email: string };
-
-        const user = await AuthService.getUserByEmail(currentToken?.email || "");
+    createAsyncController(async (request, response) => {
+        const user = await getUserFromRequest(request);
         if (!user) {
-            return new UnauthorizedResponse<string>("User not found.", "User not found.").send(res);
+            return new UnauthorizedResponse<string>(
+                ResponseMessages.USER_NOT_FOUND,
+                ResponseMessages.USER_NOT_FOUND
+            ).send(response);
         }
 
         const token = await JWTService.generateToken<UserGetDTO>({ email: user.email });
-        return new OKResponse<{ token: string }>("OK.", { token: String(token) }).send(res);
+        return new OKResponse<{ token: string }>(ResponseMessages.OK, { token: String(token) }).send(response);
     })
 );
 

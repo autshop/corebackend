@@ -1,37 +1,32 @@
-import User, { UserCreationAttributes } from "db/models/user";
 import { Request } from "express";
-import getJWTTokenFromRequest from "../../../utils/helpers/getJWTTokenFromRequest";
-import JWTService from "../../jwt";
+//
+import User, { UserCreationAttributes } from "db/models/user";
+import getJWTTokenFromRequest from "utils/helpers/getJWTTokenFromRequest";
+import JWTService from "services/jwt";
 
-const getUserById = async (userId: number) => {
-    return await User.findOne({
-        where: { id: userId }
-    });
-};
+class AuthService {
+    public static getUserById = async (userId: number) => {
+        return await User.findOne({
+            where: { id: userId }
+        });
+    };
 
-const getUserByEmail = async (email: string) => {
-    return await User.findOne({
-        where: { email }
-    });
-};
+    public static getUserByEmail = async (email: string) => {
+        return await User.findOne({
+            where: { email }
+        });
+    };
 
-const createUser = async (userCreationAttributes: UserCreationAttributes) => {
-    return await User.create(userCreationAttributes);
-};
+    public static createUser = async (userCreationAttributes: UserCreationAttributes) => {
+        return await User.create(userCreationAttributes);
+    };
 
-//TODO find better solution (middleware maybe)
-const getUserFromExpressRequest = async (request: Request) => {
-    const currentTokenString = getJWTTokenFromRequest(request);
-    const currentToken = (await JWTService.verifyToken(currentTokenString)) as { email: string };
+    public static getUserFromExpressRequest = async (request: Request) => {
+        const currentTokenString = getJWTTokenFromRequest(request);
+        const currentToken = (await JWTService.verifyToken(currentTokenString)) as { email: string };
 
-    return await AuthService.getUserByEmail(currentToken?.email || "");
-};
-
-const AuthService = {
-    getUserById,
-    createUser,
-    getUserByEmail,
-    getUserFromExpressRequest
-};
+        return await AuthService.getUserByEmail(currentToken?.email || "");
+    };
+}
 
 export default AuthService;
