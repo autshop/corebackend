@@ -6,6 +6,15 @@ import { DBConfig, transformConnectionStringToDBParams } from "services/elephant
 class ElephantSQLService {
     private static baseURL: string = "https://customer.elephantsql.com/api/";
 
+    private static getBasicAuthenticationConfig() {
+        return {
+            auth: {
+                username: "",
+                password: String(process.env.ELEPHANTSQL_API_KEY)
+            }
+        };
+    }
+
     public static async postInstance(name: string): Promise<DBConfig> {
         const postInstanceRequestBody: PostInstanceRequestBody = {
             name,
@@ -17,10 +26,7 @@ class ElephantSQLService {
             `${ElephantSQLService.baseURL}/instances`,
             postInstanceRequestBody,
             {
-                auth: {
-                    username: "",
-                    password: String(process.env.ELEPHANTSQL_API_KEY)
-                }
+                ...ElephantSQLService.getBasicAuthenticationConfig()
             }
         );
 
@@ -31,10 +37,7 @@ class ElephantSQLService {
         const { data }: AxiosResponse<GetInstanceResponse> = await axios.get(
             `${ElephantSQLService.baseURL}/instances/${id}`,
             {
-                auth: {
-                    username: "",
-                    password: String(process.env.ELEPHANTSQL_API_KEY)
-                }
+                ...ElephantSQLService.getBasicAuthenticationConfig()
             }
         );
 
