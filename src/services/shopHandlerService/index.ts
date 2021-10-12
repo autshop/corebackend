@@ -13,10 +13,15 @@ class ShopHandlerService {
                 return reject("Internal error: No shop found with id.");
             }
 
-            const dbConfig: DBConfig = await ElephantSQLService.postInstance(shop.name);
-
-            await CloudformationService.createShop(shop.id, shop.name, dbConfig);
-
+            try {
+                const dbConfig: DBConfig = await ElephantSQLService.postInstance(shop.name);
+                await CloudformationService.createShop(shop.id, shop.name, dbConfig);
+                await CloudformationService.pollShopCreationStatus(shop.id);
+            } catch (e) {
+                console.log("ERROR CREATING SHOP:");
+                console.log(e);
+                reject(e);
+            }
             resolve();
         });
     }

@@ -1,4 +1,4 @@
-import Shop, { ShopCreationAttributes } from "db/models/shop";
+import Shop, { ShopCreationAttributes, ShopStatus } from "db/models/shop";
 
 class ShopService {
     public static getShopById = async (shopId: number) => {
@@ -15,6 +15,17 @@ class ShopService {
 
     public static createShop = async (shopCreationAttributes: ShopCreationAttributes) => {
         return await Shop.create(shopCreationAttributes);
+    };
+
+    public static updateShopStatus = async (shopId: number, shopStatus: ShopStatus) => {
+        const shop: Shop | null = await ShopService.getShopById(shopId);
+
+        if (!shop) {
+            throw new Error("Shop not found.");
+        }
+
+        shop.status = shopStatus;
+        await shop.save();
     };
 }
 
