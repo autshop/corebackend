@@ -11,6 +11,10 @@ class CloudformationService {
         return new CloudFormation({ region: "eu-west-3" });
     }
 
+    private static createShopStackName(tenantId: number) {
+        return `shop-store-${tenantId}`;
+    }
+
     private static async getSystemParameters(): Promise<AWSSystemParameters> {
         const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
         const { Stacks }: CloudFormation.DescribeStacksOutput = await serviceInterfaceObject.describeStacks().promise();
@@ -46,7 +50,7 @@ class CloudformationService {
         const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
         return await serviceInterfaceObject
             .createStack({
-                StackName: `shop-store-${tenantId}`,
+                StackName: CloudformationService.createShopStackName(tenantId),
                 TemplateURL: "https://autshop.s3.eu-west-3.amazonaws.com/deployments/new-store.yaml",
                 Capabilities: ["CAPABILITY_NAMED_IAM"],
                 Parameters: [
@@ -85,10 +89,12 @@ class CloudformationService {
             .promise();
     }
 
-    public static async deleteShop(tenantId: string) {
+    public static async deleteShop(tenantId: number) {
         try {
             const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
-            await serviceInterfaceObject.deleteStack({ StackName: `tenant-${tenantId}` });
+            await serviceInterfaceObject.deleteStack({
+                StackName: CloudformationService.createShopStackName(tenantId)
+            });
         } catch (e) {}
     }
 
@@ -96,7 +102,7 @@ class CloudformationService {
         while (true) {
             const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
             const { Stacks }: CloudFormation.DescribeStacksOutput = await serviceInterfaceObject
-                .describeStacks({ StackName: `shop-store-${tenantId}` })
+                .describeStacks({ StackName: CloudformationService.createShopStackName(tenantId) })
                 .promise();
 
             const stack: CloudFormation.Stack = get(Stacks, "[0]");
