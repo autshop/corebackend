@@ -7,10 +7,10 @@ import { CreatedResponse, UnauthorizedResponse } from "utils/api/response";
 import { ShopGetDTO, ShopPostDTO, ShopsGetDTO } from "dto/shop";
 import verifyJWTMiddleware from "middlewares/verifyJWTMiddleware";
 import ShopService from "services/db/shop";
-import Shop from "db/models/shop";
 import getUserFromRequest from "utils/helpers/getUserFromRequest";
 import ResponseMessages from "utils/helpers/responseMessages";
-import { transformShopModelsToShopDTOs, transformShopModelToShopDTO } from "../../dto/shop/transformers";
+import { transformShopModelsToShopDTOs, transformShopModelToShopDTO } from "dto/shop/transformers";
+import ShopHandlerService from "services/shopHandlerService";
 
 const router = Router();
 
@@ -30,6 +30,10 @@ router.post(
         const { name }: ShopPostDTO = request.body;
 
         const shop = await ShopService.createShop({ name, userId: user.id });
+
+        //This is an async job on what we are intentionally not waiting for.
+        ShopHandlerService.createShop(shop.id).then();
+
         const shopDTO: ShopGetDTO = transformShopModelToShopDTO(shop);
         return new CreatedResponse<ShopGetDTO>(ResponseMessages.SHOP_CREATED_SUCCESSFULLY, shopDTO).send(response);
     })

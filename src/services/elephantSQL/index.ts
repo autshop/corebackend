@@ -17,7 +17,7 @@ class ElephantSQLService {
 
     public static async postInstance(name: string): Promise<DBConfig> {
         const postInstanceRequestBody: PostInstanceRequestBody = {
-            name,
+            name: `tenant-${name}`,
             plan: "turtle",
             region: "amazon-web-services::eu-west-1"
         };
