@@ -32,6 +32,8 @@ class CloudformationService {
                 ""
             );
 
+        console.log(mergedOutputs);
+
         return {
             VPC: getValueByKey("VPC"),
             ALBListenerStoreAPI: getValueByKey("ALBListenerStoreAPI"),
