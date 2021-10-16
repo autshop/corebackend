@@ -11,8 +11,8 @@ interface ShopAttributes {
 
 export enum ShopStatus {
     INITIAL = "INITIAL",
-    CREATE_COMPLETE = "CREATE_COMPLETE",
     CREATE_IN_PROGRESS = "CREATE_IN_PROGRESS",
+    CREATE_COMPLETE = "CREATE_COMPLETE",
     ERROR = "ERROR"
 }
 
@@ -43,7 +43,12 @@ export const initialize = (sequelize: Sequelize) => {
                 type: DataTypes.INTEGER.UNSIGNED
             },
             status: {
-                type: DataTypes.ENUM(ShopStatus.CREATE_IN_PROGRESS, ShopStatus.CREATE_COMPLETE),
+                type: DataTypes.ENUM(
+                    ShopStatus.INITIAL,
+                    ShopStatus.CREATE_IN_PROGRESS,
+                    ShopStatus.CREATE_COMPLETE,
+                    ShopStatus.ERROR
+                ),
                 defaultValue: ShopStatus.INITIAL
             }
         },
