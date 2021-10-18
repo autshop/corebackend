@@ -5,6 +5,8 @@ import { DBConfig } from "services/elephantSQL/util";
 import { AWSSystemParameters } from "services/aws/cloudformation/types";
 import ShopService from "services/db/shop";
 import { ShopStatus } from "db/models/shop";
+import delay from "utils/helpers/delay";
+import CodeBuildService, { CodeBuildProjectType } from "../codebuild";
 
 class CloudformationService {
     private static createServiceInterfaceObject() {
@@ -48,6 +50,20 @@ class CloudformationService {
     }
 
     public static async createShop(tenantId: number, tenantName: string, dbConfig: DBConfig) {
+        //CodeBuild
+        const storefrontCodeBuildBuildId = await CodeBuildService.startBuild(
+            tenantId,
+            tenantName,
+            CodeBuildProjectType.SHOP_STOREFRONT
+        );
+        const storeadminCodeBuildBuildId = await CodeBuildService.startBuild(
+            tenantId,
+            tenantName,
+            CodeBuildProjectType.SHOP_STOREADMIN
+        );
+        await CodeBuildService.pollBuilds([storefrontCodeBuildBuildId, storeadminCodeBuildBuildId]);
+
+        //CloudFormation
         const systemParameters: AWSSystemParameters = await CloudformationService.getSystemParameters();
         const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
         return await serviceInterfaceObject
@@ -114,9 +130,7 @@ class CloudformationService {
                 return;
             } else if (stack.StackStatus === ShopStatus.CREATE_IN_PROGRESS) {
                 await ShopService.updateShopStatus(tenantId, ShopStatus.CREATE_IN_PROGRESS);
-                await (async () => {
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                })();
+                await delay(3000);
             } else {
                 await ShopService.updateShopStatus(tenantId, ShopStatus.ERROR);
                 throw new Error("Failed to create stack.");
