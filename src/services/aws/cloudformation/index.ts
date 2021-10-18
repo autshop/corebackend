@@ -7,6 +7,7 @@ import ShopService from "services/db/shop";
 import { ShopStatus } from "db/models/shop";
 import delay from "utils/helpers/delay";
 import CodeBuildService, { CodeBuildProjectType } from "../codebuild";
+import S3Service from "../s3";
 
 class CloudformationService {
     private static createServiceInterfaceObject() {
@@ -66,7 +67,7 @@ class CloudformationService {
         //CloudFormation
         const systemParameters: AWSSystemParameters = await CloudformationService.getSystemParameters();
         const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
-        return await serviceInterfaceObject
+        await serviceInterfaceObject
             .createStack({
                 StackName: CloudformationService.createShopStackName(tenantId),
                 TemplateURL: "https://autshop.s3.eu-west-3.amazonaws.com/deployments/new-store.yaml",
@@ -105,15 +106,16 @@ class CloudformationService {
                 ]
             })
             .promise();
+
+        //S3
+        await S3Service.syncShopAdminBucket(tenantId, tenantName);
     }
 
     public static async deleteShop(tenantId: number) {
-        try {
-            const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
-            await serviceInterfaceObject.deleteStack({
-                StackName: CloudformationService.createShopStackName(tenantId)
-            });
-        } catch (e) {}
+        const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
+        await serviceInterfaceObject.deleteStack({
+            StackName: CloudformationService.createShopStackName(tenantId)
+        });
     }
 
     public static async pollShopCreationStatus(tenantId: number) {

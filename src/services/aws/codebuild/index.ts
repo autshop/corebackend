@@ -1,6 +1,7 @@
 import { CodeBuild } from "aws-sdk";
 import { find } from "lodash";
-import delay from "../../../utils/helpers/delay";
+//
+import delay from "utils/helpers/delay";
 
 export enum CodeBuildProjectType {
     SHOP_STOREADMIN = "shop-storeadmin",
@@ -70,7 +71,7 @@ class CodeBuildService {
                 .batchGetBuilds({ ids })
                 .promise();
 
-            const isAllBuildsCompletedAndSucceeded = find(
+            const isAllBuildsCompletedAndSucceeded = !find(
                 builds,
                 ({ currentPhase, buildStatus }) => currentPhase !== "COMPLETED" || buildStatus !== "SUCCEEDED"
             );
@@ -80,13 +81,13 @@ class CodeBuildService {
 
             const isAnyBuildCompletedAndNotSucceeded = find(
                 builds,
-                ({ currentPhase, buildStatus }) => currentPhase === "COMPLETED" || buildStatus !== "SUCCEEDED"
+                ({ currentPhase, buildStatus }) => currentPhase === "COMPLETED" && buildStatus !== "SUCCEEDED"
             );
             if (isAnyBuildCompletedAndNotSucceeded) {
                 throw new Error("Build failed.");
             }
 
-            await delay(3000);
+            await delay(15000);
         }
     }
 }
