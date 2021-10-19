@@ -4,8 +4,9 @@ import cors, { CorsOptions } from "cors";
 //
 import apiRouter from "routes";
 
+const origin = process.env.ORIGIN_URL || "http://shop.akosfi.com";
 const corsOptions: CorsOptions = {
-    origin: "http://shop.akosfi.com",
+    origin,
     credentials: true
 };
 
