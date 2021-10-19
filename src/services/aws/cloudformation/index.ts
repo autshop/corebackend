@@ -51,6 +51,8 @@ class CloudformationService {
     }
 
     public static async createShop(tenantId: number, tenantName: string, dbConfig: DBConfig) {
+        await ShopService.updateShopStatus(tenantId, ShopStatus.CREATE_IN_PROGRESS);
+
         //CodeBuild
         const storefrontCodeBuildBuildId = await CodeBuildService.startBuild(
             tenantId,
@@ -127,14 +129,14 @@ class CloudformationService {
 
             const stack: CloudFormation.Stack = get(Stacks, "[0]");
 
-            if (stack.StackStatus === ShopStatus.CREATE_COMPLETE) {
-                await ShopService.updateShopStatus(tenantId, ShopStatus.CREATE_COMPLETE);
+            if (stack.StackStatus === ShopStatus.RUNNING) {
+                await ShopService.updateShopStatus(tenantId, ShopStatus.RUNNING);
                 return;
             } else if (stack.StackStatus === ShopStatus.CREATE_IN_PROGRESS) {
                 await ShopService.updateShopStatus(tenantId, ShopStatus.CREATE_IN_PROGRESS);
                 await delay(3000);
             } else {
-                await ShopService.updateShopStatus(tenantId, ShopStatus.ERROR);
+                await ShopService.updateShopStatus(tenantId, ShopStatus.STOPPED);
                 throw new Error("Failed to create stack.");
             }
         }

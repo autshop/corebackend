@@ -5,6 +5,7 @@ export type ShopPostDTO = {
 export type ShopGetDTO = {
     id: number;
     name: string;
+    status: string;
 };
 
 export type ShopsGetDTO = ShopGetDTO[];

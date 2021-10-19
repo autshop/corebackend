@@ -10,10 +10,10 @@ interface ShopAttributes {
 }
 
 export enum ShopStatus {
-    INITIAL = "INITIAL",
+    PENDING = "PENDING",
     CREATE_IN_PROGRESS = "CREATE_IN_PROGRESS",
-    CREATE_COMPLETE = "CREATE_COMPLETE",
-    ERROR = "ERROR"
+    RUNNING = "RUNNING",
+    STOPPED = "STOPPED"
 }
 
 export interface ShopCreationAttributes extends Optional<ShopAttributes, "id" | "status"> {}
@@ -44,12 +44,12 @@ export const initialize = (sequelize: Sequelize) => {
             },
             status: {
                 type: DataTypes.ENUM(
-                    ShopStatus.INITIAL,
+                    ShopStatus.PENDING,
                     ShopStatus.CREATE_IN_PROGRESS,
-                    ShopStatus.CREATE_COMPLETE,
-                    ShopStatus.ERROR
+                    ShopStatus.RUNNING,
+                    ShopStatus.STOPPED
                 ),
-                defaultValue: ShopStatus.INITIAL
+                defaultValue: ShopStatus.PENDING
             }
         },
         {
