@@ -104,7 +104,9 @@ class CloudformationService {
                     { ParameterKey: "EnvDbPassword", ParameterValue: dbConfig.password },
                     { ParameterKey: "EnvDbServer", ParameterValue: dbConfig.server },
                     { ParameterKey: "EnvDbName", ParameterValue: dbConfig.databaseName },
-                    { ParameterKey: "EnvDbPort", ParameterValue: "5432" }
+                    { ParameterKey: "EnvDbPort", ParameterValue: "5432" },
+                    { ParameterKey: "EnvCDNAWSAccessKeyId", ParameterValue: process.env.AWS_CDN_ACCESS_KEY_ID },
+                    { ParameterKey: "EnvCDNAWSSecretAccessKey", ParameterValue: process.env.AWS_CDN_SECRET_ACCESS_KEY }
                 ]
             })
             .promise();
