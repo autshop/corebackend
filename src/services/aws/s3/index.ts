@@ -7,8 +7,8 @@ class S3Service {
     }
 
     public static async syncShopAdminBucket(tenantId: number, tenantName: string) {
-        const sourceBucket = `s3://autshop/tenant-${tenantId}`;
-        const destinationBucket = `s3://admin.${tenantName}.shop.akosfi.com`;
+        const sourceBucket = `autshop`;
+        const destinationBucket = `admin.${tenantName}.shop.akosfi.com`;
 
         const serviceInterfaceObject = S3Service.createServiceInterfaceObject();
 
@@ -22,18 +22,20 @@ class S3Service {
                     return;
                 }
 
+                const keyPrefix = (Key || "").split("/")[0];
+                const keyWithoutPrefix = (Key || "").split("/").shift();
+
+                if (keyPrefix !== `tenant-${tenantId}` || !keyWithoutPrefix) {
+                    return;
+                }
+
+                const newKey = (keyWithoutPrefix || []).join("/");
+
                 await serviceInterfaceObject
                     .copyObject({
                         Bucket: destinationBucket,
                         CopySource: `${sourceBucket}/${Key}`,
-                        Key
-                    })
-                    .promise();
-
-                await serviceInterfaceObject
-                    .deleteObject({
-                        Bucket: sourceBucket,
-                        Key
+                        Key: newKey
                     })
                     .promise();
             })

@@ -35,8 +35,6 @@ class CloudformationService {
                 ""
             );
 
-        console.log(mergedOutputs);
-
         return {
             VPC: getValueByKey("VPC"),
             ALBListenerStoreAPI: getValueByKey("ALBListenerStoreAPI"),
@@ -69,7 +67,7 @@ class CloudformationService {
         //CloudFormation
         const systemParameters: AWSSystemParameters = await CloudformationService.getSystemParameters();
         const serviceInterfaceObject: CloudFormation = CloudformationService.createServiceInterfaceObject();
-        await serviceInterfaceObject
+        const { StackId }: CloudFormation.CreateStackOutput = await serviceInterfaceObject
             .createStack({
                 StackName: CloudformationService.createShopStackName(tenantId),
                 TemplateURL: "https://autshop.s3.eu-west-3.amazonaws.com/deployments/new-store.yaml",
@@ -111,6 +109,23 @@ class CloudformationService {
             })
             .promise();
 
+        while (true) {
+            const { Stacks }: CloudFormation.DescribeStacksOutput = await serviceInterfaceObject
+                .describeStacks({ StackName: StackId })
+                .promise();
+
+            if (!!Stacks && Stacks[0]?.StackStatus === "CREATE_COMPLETE") {
+                break;
+            } else if (
+                (!!Stacks && Stacks[0]?.StackStatus === "CREATE_IN_PROGRESS") ||
+                (!!Stacks && Stacks[0]?.StackStatus === "REVIEW_IN_PROGRESS")
+            ) {
+                await delay(3000);
+            } else {
+                throw new Error("Failed");
+            }
+        }
+
         //S3
         await S3Service.syncShopAdminBucket(tenantId, tenantName);
     }
@@ -131,7 +146,10 @@ class CloudformationService {
 
             const stack: CloudFormation.Stack = get(Stacks, "[0]");
 
-            if (stack.StackStatus === ShopStatus.RUNNING) {
+            console.log(stack.StackStatus);
+
+            //TODO fix me below
+            if (stack.StackStatus === ShopStatus.RUNNING || stack.StackStatus === "CREATE_COMPLETE") {
                 await ShopService.updateShopStatus(tenantId, ShopStatus.RUNNING);
                 return;
             } else if (stack.StackStatus === ShopStatus.CREATE_IN_PROGRESS) {
