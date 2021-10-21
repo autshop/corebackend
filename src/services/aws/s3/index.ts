@@ -23,19 +23,17 @@ class S3Service {
                 }
 
                 const keyPrefix = (Key || "").split("/")[0];
-                const keyWithoutPrefix = (Key || "").split("/").shift();
+                const keyWithoutPrefix: string = (Key || "").split(keyPrefix + "/")[1];
 
                 if (keyPrefix !== `tenant-${tenantId}` || !keyWithoutPrefix) {
                     return;
                 }
 
-                const newKey = (keyWithoutPrefix || []).join("/");
-
                 await serviceInterfaceObject
                     .copyObject({
                         Bucket: destinationBucket,
                         CopySource: `${sourceBucket}/${Key}`,
-                        Key: newKey
+                        Key: keyWithoutPrefix
                     })
                     .promise();
             })
